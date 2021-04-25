@@ -1,0 +1,205 @@
+\section{Описание}
+Требуется написать реализацию алгоритма поиска образца, основанного на использовании Z-функции. 
+Согласно [1], для строки S и позиции $i<1$ Z-функция $Z_i$(S) определяется как длина наибольшей подстроки S, которая начинается в $i$ и совпадает с префиксом S.
+
+Для эффективного вычисления Z-функции необходимо ввести следующие понятия:
+\begin{enumerate}
+	\item Z-блок – для любой позиции $i > 1$, в которой $Z_i(S) > 0$, это интервал, начинающийся в $i$ и заканчивающийся в позиции $i + Z_i(S) - 1$.
+	\item $r_i$ – крайняя правая позиция конца Z-блоков, начинающихся не позднее позиции $i$.
+	\item $l_i$ – крайняя левая позиция Z-блока, начинающегося не позднее $i$, с наибольшей крайней правой позицией.
+\end{enumerate}
+
+Алгоритм Z-функции вычисляет значения $Z_i$, $r_i$ , $l_i$ последовательно для каждой позиции, начиная с $i = 2$. Для ускорения этого расчета используются уже вычисленные значения Z.
+Пусть при работе алгоритма были вычислены Zi для $1 < i \leq k-1$ и текущие значения l и r. Тогда $Z_k$ и изменения для l и r можно определить следующим образом:
+\begin{enumerate}
+	\item Если $k > r$, то значение $Z_k$ вычисляется непосредственным сравнением подстрок, начиная с позиции $k$ и $с$ позиции 1. Длина совпадающей части и является $Z_k$, при $Z_k > 0$ также 
+	изменяется значения $l = k$ и $r = k + Z_k - 1$.
+	\item Если $k \leq r$, то позиция k содержится в текущем Z-блоке и подстрока $S[l..r]$
+	совпадает с префиксом $S[1..r-l+ 1]$, а значит и символ на позиции k совпадает
+	с символом в позиции $k = k - l + 1$. По тем же причинам подстрока $S[k..r]$
+	(назовём её $\beta$) должная совпадать с подстрокой $S[k..Z_l]$, где ранее уже были
+	вычислены значения Z-функции. Здесь возникает два возможных случая:
+	Если $Z_k < | \beta |$, то $Z_k = Z_k$ и $r$, $l$ не изменяются.
+	Если $Z_k \geq | \beta |$, то вся подстрока $S[k..r]$ должна быть префиксом S, однако не гарантируется то, что эта подстрока наибольшая совпадающая.
+	Необходимо сравнить до несовпадения символы, начиная с позиции $r + 1$,
+	с символами, начиная с позиции $| \beta |+ 1$. Пусть несовпадение произошло на
+	символе $q \geq r + 1$. Тогда $Z_k$ полагается равным $q - k$, $r = q - 1$ и $l = k$.
+\end{enumerate}	
+\pagebreak
+
+\section{Исходный код}
+В рамках данной задачи работа алгоритма должна происходить не с буквами, а
+целыми словами текста. Для корректного выполнения Z-функции нужно написать
+функцию Equals(2), проверяющую два слова на равенства, с учетом регистронезависимости. Также определим метод CalculateZFunc(2), вычисляющий Z-функцию по
+входной строке и сохраняющий её значения во входной массив. В свою очередь нахождение вхождений в тексте указанного образца будет осуществляться в другом методе – FindOccurs(3), использующем Z-функцию образца и вычисляющем значения
+Z-функции для строки S = P\textdollar T, начиная с начала текста. Поскольку все значения этой Z-функции будут гарантированно меньше длины образца P (т.к. нельзя при сравнении уйти за символ \textdollar), 
+то все значения в полученных Z-блоках могут быть найдены с использованием только значений Z-функции образца. Такой подход является довольно эффективным с точки зрения затрат памяти, поскольку не нужно
+создавать массив с целыми числами Z-функции для целого текста. При нахождении
+образца в тексте необходимо также вывести номер строки и номер слова, с которого начинается вхождение, для этого можно создать соответствующую структуру
+TAnswer. Ниже приведён исходный код search.hpp с описанными методами:
+
+Код: main.cpp
+\begin{lstlisting}[language=C++]
+#include "search.hpp"
+int main() {
+std::vector<int> zFunc;
+std::vector<std::string> sample;
+std::vector<int> stringEnd;
+std::vector<std::string> text;
+std::string word;
+word.append(MAX_WORD_LENGTH, 0);
+char c = getchar();
+bool sampleFinish = false;
+bool inputWord = false;
+int index = 0;
+while (c != EOF) {
+if (c == '\n') {
+if (inputWord) {
+if (!sampleFinish) {
+sample.push_back(word);
+}
+else {
+text.push_back(word);
+}   
+for (int i = 0; i < index; ++i) {
+word[i] = 0;
+}
+index = 0;
+inputWord = false;
+}
+if (!sampleFinish) {
+sampleFinish = true;
+}
+else {
+stringEnd.push_back(text.size());
+}
+}
+else if (c == '\t' || c == ' ') {
+if (inputWord) {
+if (!sampleFinish) {
+sample.push_back(word);
+}
+else {
+text.push_back(word);
+}
+for (int i = 0; i < index; ++i) {
+word[i] = 0;
+}
+index = 0;
+inputWord = false;
+}
+}
+else {
+word[index] = c;
+++index;
+inputWord = true;
+}
+c = getchar();
+}
+zFunc.assign(sample.size(), 0);
+CalculateZFunc(sample, zFunc);
+std::vector<TAnswer> ans = FindOccurs(sample, zFunc, text, stringEnd);
+for (int j = 0; j < ans.size(); ++j) {
+std::cout << ans[j].strPos << ", " << ans[j].wordPos << std::endl;
+}
+return 0;
+}
+\end{lstlisting}
+
+В исходном коде main.cpp описан основной ход работы программы – чтение входного
+образца и текста с учетом возможного произвольного числа пробелов между словами,
+вызов функций вычисления Z-функции и поиска образца, а также вывод полученного
+ответа
+
+Код: search.hpp
+\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+struct TAnswer {
+int strPos;
+int wordPos;
+};
+const int MAX_WORD_LENGTH = 16;
+bool Equals(const std::string& first, const std::string& second) {
+for (int i = 0; i < MAX_WORD_LENGTH; ++i) {
+char c1 = ('A' <= first[i] && first[i] <= 'Z' ? first[i] - 'A' + 'a' : first[i]);
+char c2 = ('A' <= second[i] && second[i] <= 'Z' ? second[i] - 'A' + 'a' : second[i]);
+if (c1 != c2) {
+return false;
+}
+}
+return true;
+}
+void CalculateZFunc(const std::vector<std::string>& sample, std::vector<int>& zFunc) {
+for (int i = 1, l = 0, r = 0; i < zFunc.size(); ++i) {
+if (i <= r) {
+zFunc[i] = std::min(zFunc[i - l], r - i + 1);
+}
+while (zFunc[i] + i < zFunc.size() && Equals(sample[zFunc[i]], sample[zFunc[i] + i])) {
+++zFunc[i];
+}
+if (r < i + zFunc[i] - 1) {
+l = i;
+r = i + zFunc[i] - 1;
+}
+}
+}
+std::vector<TAnswer> FindOccurs(const std::vector<std::string>& sample, const std::vector<int>& zFunc, const std::vector<std::string>& text, const std::vector<int>& stringEnd) {
+int value;
+int wordPos = 0;
+int strPos = 0;
+std::vector<TAnswer> answer;
+for (int i = 0, l = 0, r = 0; i < text.size(); ++i) {
+value = 0;
+while (i == stringEnd[strPos]) {
+++strPos;
+wordPos = 0;
+}
+++wordPos;
+if (i <= r) {
+value = std::min(zFunc[i - l], r - i + 1);
+}
+while (value < sample.size() && value + i < text.size() && Equals(sample[value], text[value + i])) {
+++value;
+}
+if (r < i + value - 1) {
+l = i;
+r = i + value - 1;
+}
+if (value == sample.size()) {
+answer.push_back({strPos + 1, wordPos});
+}
+}
+return answer;
+}
+\end{lstlisting}
+
+\pagebreak
+
+\section{Консоль}
+
+\begin{alltt}
+(py37) ~ /DA_labs/lab4$ make
+g++ -std=c++11 -O2 -Wextra -Wall -Werror -Wno-sign-compare -Wno-unused-result
+-pedantic -o solution main.cpp
+(py37) ~ /DA_labs/lab4$ cat test1.txt
+cat dog cat dog bird
+CAT dog CaT Dog Cat DOG bird CAT
+dog cat dog bird
+(py37) ~ /DA_labs/lab4$ ./solution <test1.txt
+1,3
+1,8
+(py37) ~ /DA_labs/lab4$ cat test2.txt
+mouse
+mo use horse
+cat dog cat mo
+use mouse mouse
+(py37) ~ /DA_labs/lab4$ ./solution <test2.txt
+3,2
+3,3
+\end{alltt}
+
+\pagebreak
+
