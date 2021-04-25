@@ -1,0 +1,13 @@
+! Save empty.b
+! Load asdfghj
++ a 11
+a
+b
+-a
+! Save file
+a
++ b 7
+b
+! Load file
+a
+b
