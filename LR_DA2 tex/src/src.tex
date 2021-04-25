@@ -1,0 +1,297 @@
+\section{Описание}
+Процесс разработки можно разделить на два этапа: создание и отладка структуры красно-черное дерево и реализация парсера команд (словаря), работающего с этим деревом.
+
+Дерево должно хранить в своих вершинах слова (в формате строки) и соответствующие им числа. Так как слова в словаре должны быть отсортированы в алфавитном
+порядке, ключом будет считаться именно слово, а соответствующее ему число – значением.
+
+Красно-черное дерево – самобалансирующееся дерево, узлы которого имеют атрибут
+цвета. При этом, дерево должно удовлетворять условиям: 1. Узел может быть либо
+красным, либо чёрным и имеет двух потомков; 2. Корень – чёрный. 3. Все листья
+— чёрные. 4. Оба потомка каждого красного узла — чёрные. 5. Любой простой путь
+от узла-предка до листового узла-потомка содержит одинаковое число чёрных узлов. Для соблюдения этих условий после каждой операции вставки/удаления узла
+должна проводиться перебалансировка. Время, затрачиваемое на доступ к элементам, составляет $O(log(n))$, где $n$ – число элементов в нем.
+
+Перебаланисировка производится с помощью операций поворота и перекрашивания
+узлов, которые применяются в зависимости от текущей расцветки и положений узлов дерева. В ходе перебалансировки количество черных узлов на пути из элемента,
+для которого операция перебалансировки была вызвана до всех его листовых потомков уравниваются, однако так как при этом их суммарное число могло измениться,
+в некоторых случаях операция рекурсивно вызывается для его потомков, пока не
+отбалансируется все дерево начиная с корня.
+
+В ходе разработки структуры «красно-черное дерево» также необходимо реализовать
+операции сохранения его в файл и загрузки из файла. Элементы дерева записываются в файл по очереди их прохождения в процессе обхода в глубину, при этом,
+вначале записывается текущий элемент, затем – оба его потомка, начиная с левого.
+Таким образом, во время чтения дерева из заранее сохраненного файла при обнаружении очередного элемента мы можем быть уверены, что следующий за ним элемент
+является его левым потомком. Если был найден лист (элемент в котором лежит строка длины ноль), то мы понимаем, что текущая ветвь закончилась, и далее записан
+правый потомок родителя считанного ранее узла.
+
+Для того чтобы не тратить время на попытки расшифровки файлов, которые были
+созданы не программой словаря, в начало файла добавляется маркер, состоящий из
+трех символов. При чтении дерева файла структура строится отдельно от текущего
+дерева, и только если чтение прошло без ошибок, текущее дерево заменяется считанным
+
+В самом словаре производится непрерывная обработка входных строк, в соответствии с результатом этой обработки для каждой введенной команды вызывается
+метод заранее созданного дерева. Методы в большинстве своем возвращают код завершения, в соответствии с которым осуществляется вывод на экран информации о
+результате выполнения команды.
+
+\pagebreak
+
+\section{Исходный код}
+Вначале создаем класс узла дерева. В нем хранится ключ (указатель на строку),
+значение (переменная типа unsigned long long) и цвет (переменная типа char). Также
+в узле хранятся указатели на родителя и обоих детей этого узла.
+
+Для компактности отчета здесь и далее я буду приводить методы класса только в таблице
+
+\begin{lstlisting}[language=C++]
+const char BLACK = 1;
+const char RED = 2;
+
+class TRBNode {
+public: 
+char* Key; 
+unsigned long long Value;
+char Colour = BLACK;
+
+TRBNode* Parent = nullptr;
+TRBNode* Left = nullptr;
+TRBNode* Right = nullptr;
+\end{lstlisting}
+
+Также реализуем вспомогательную функцию strequal, работающую аналогично strcmp,
+однако не реагирующую на различный регистр букв сравниваемых строк.
+
+Реализуем класс дерева.
+\begin{lstlisting}[language=C++]
+class TRBTree {
+private:
+	TRBNode* TreeRoot = nullptr;
+}
+\end{lstlisting}
+
+В функции main будем производить обработку команд, предварительно создав дерево, в которое будем записывать слова.
+
+\begin{lstlisting}[language=C++]
+int main() {
+TRBTree maintree; 
+
+char *inpstr = (char*)calloc(260,sizeof(char)); 
+char *word = (char*)calloc(260,sizeof(char)); 
+unsigned long long inpval;
+
+if(inpstr == NULL || inpstr == nullptr || word == NULL || word == nullptr) {
+printf("ERROR: allocation error\n");
+return -1;
+}
+
+while (scanf("%s", inpstr) != EOF) {
+if(strlen(inpstr)>256) {
+printf("ERROR: uncorrect input\n");
+continue;
+}
+if (inpstr[0] == '+') {
+if(scanf("%s %llu", word, &inpval) == EOF) {
+break;
+}
+if(strlen(word)>256) {
+printf("ERROR: uncorrect input\n");
+continue;
+}
+int mrk = maintree.Add(word, inpval);
+if (mrk == 0) {
+printf("OK\n");
+}
+else {
+if (mrk == -7) {
+printf("Exist\n");
+}
+else
+if (mrk == -3) {
+printf("ERROR: empty input\n");
+}
+else
+if (mrk == -4) {
+printf("ERROR: untraced allocation error\n");
+}
+else
+if (mrk == -1) {
+printf("ERROR: out of memory\n");
+}
+else {
+printf("ERROR: unknown error\n");
+}
+}
+}
+else 
+if (inpstr[0] == '-') {
+if(scanf("%s", word) == EOF) {
+break;
+}
+if(strlen(word)>256) {
+printf("ERROR: uncorrect input\n");
+continue;
+}
+int mrk = maintree.Remove(word);
+if (mrk == 0) {
+printf("OK\n");
+}
+else 
+if (mrk == -8) {
+printf("NoSuchWord\n");
+}
+else
+if (mrk == -1) {
+printf("ERROR: out of memory\n");
+}
+else {
+printf("ERROR: unknown error\n");
+}
+}
+else
+if (inpstr[0] == '!') {
+std::string path;
+if(scanf("%s", word) == EOF) {
+break;
+}
+if (strcmp(word, "Save") == 0) {
+std::cin >> path;
+
+int mrk = maintree.SaveToDisk(path); 
+if (mrk == 0) {
+printf("OK\n");
+continue;
+}
+else 
+if (mrk == 1) {
+printf("OK\n");
+continue;
+}
+else 
+if (mrk == -1) {
+printf("ERROR: unable to open file\n");
+continue;
+}
+else 
+if (mrk == -2) {
+printf("ERROR: unable to write file\n");
+continue;
+}
+else 
+if (mrk == -3) {
+printf("ERROR: file acsess error\n");
+continue;
+}
+else 
+{
+printf("ERROR: something gone wrong\n");
+continue;
+}
+}
+else
+if (strcmp(word, "Load") == 0) {
+std::cin >> path;
+
+int mrk = maintree.LoadFromDisk(path); 
+if (mrk == 0) {
+printf("OK\n");
+continue;
+}
+else 
+if (mrk == -1) {
+printf("ERROR: file is damaged\n");
+continue;
+}
+else 
+if (mrk == -2) {
+printf("ERROR: wrong format of file\n");
+continue;
+}
+else 
+if (mrk == -3) {
+printf("ERROR: file acsess error\n");
+continue;
+}
+else 
+{
+printf("ERROR: something gone wrong\n");
+continue;
+}
+}
+
+}
+else {
+TRBNode* res = maintree.Find(inpstr);
+if (res != nullptr) {
+printf("OK: %llu\n",res->Value);
+}
+else {
+printf("NoSuchWord\n");
+}
+}
+}
+
+maintree.Destroy(); 
+free(inpstr);
+free(word);
+
+return 0;
+}
+\end{lstlisting}
+
+\pagebreak
+
+\section{Консоль}
+
+\begin{alltt}
+(py37) ~ /DA/lab2$ g++ -g -Wall -o lab2ex Prog/DA_lab_2_nostl.cpp
+(py37) ~ /DA/lab2$ cat tests/test1
++ a 1
++ A 2
++ aa 18446744073709551615
+aa
+A
+-A
+a
+(py37) ~ /DA/lab2$ ./lab2ex <tests/test1
+OK
+Exist
+OK
+OK: 18446744073709551615
+OK: 1
+OK
+NoSuchWord
+\end{alltt}
+
+\pagebreak
+
+\begin{alltt}
+(py37) ~ /DA/lab2$ cat tests/test2
+! Save empty.b
+! Load asdfghj
++ a 11
+a
+b
+-a
+! Save file
+a
++ b 7
+b
+! Load file
+a
+b
+(py37) ~ /DA/lab2$ ./lab2ex <tests/test2
+OK
+ERROR: file acsess error
+OK
+OK: 11
+NoSuchWord
+OK
+OK
+NoSuchWord
+OK
+OK: 7
+OK
+NoSuchWord
+NoSuchWord
+\end{alltt}
+
+\pagebreak
