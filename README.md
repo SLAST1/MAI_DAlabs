@@ -1,7 +1,7 @@
 # MAI_DAlabs
 
 Variants:
-1. [Порязрядная сортировка|Числа|Строки переменной длины](/LR_DA1 tex/report.pdf)
-2. [КЧД](/LR_DA2 tex/report.pdf)
-3. [Дневник отладки ЛР 2](/LR_DA3 tex/report.pdf)
-4. [Поиск образца на Z-блоках|Слова <16 знаков](/LR_DA4 tex/report.pdf)
+1. [Radix sort|Numbers|Variable length strings](/LR_DA1 tex/report.pdf)
+2. [RB-tree](/LR_DA2 tex/report.pdf)
+3. [LR2 debug diary](/LR_DA3 tex/report.pdf)
+4. [Finding a pattern on Z-blocks|Words <16 chars](/LR_DA4 tex/report.pdf)
