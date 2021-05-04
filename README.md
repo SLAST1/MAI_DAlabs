@@ -1,7 +1,7 @@
 # MAI_DAlabs
 
 Variants:
-1. [Порязрядная сортировка/ключи=числа/значения=строки переменной длины](/tasks/task_01/Lab01.pdf)
-2. [5ln^4(arctg^2(z-2))-z-7](/tasks/task_02/!Lab02.pdf)
-3. [Coins 1-15-20-25-50](/tasks/task_03/!Lab03.pdf)
-4. [$dec | * | + | + | + | * | * | * |](/tasks/task_04/!Lab04.pdf)
+1. [Порязрядная сортировка/Числа/Строки переменной длины](/LR_DA1 tex/report.pdf)
+2. [КЧД](LR_DA2 tex/report.pdf)
+3. [Дневник отладки ЛР 2](LR_DA3 tex/report.pdf)
+4. [Поиск образца на Z-блоках/Слова <16 знаков](LR_DA4 tex/report.pdf)
