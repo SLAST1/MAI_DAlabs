@@ -1,0 +1,58 @@
+\section{Тест производительности}
+
+Проводим тест производительности. Для сравнения я сделал программу, использующую std::map, операции доступа к элементам которого выполняются за $O((log(n))$,
+где $n$ – количество элементов в контейнере. На вход поступает файл с $10^6$ строк.
+
+Так как отдельные операции доступа осуществляются настолько быстро, что отследить их невозможно, будем сравнивать время обработки целого файла, в котором
+находится $10^6$ случайно сгенерированных строк, половина которых содержат в
+себе команды добавления, а вторая половина поделена между командами удаления и отыскания.
+
+\begin{alltt}
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1177ms
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1178ms
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1206ms
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1183ms
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1200ms
+(py37) ~ /DA/lab2$ ./lab2_bm <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 1181ms
+\end{alltt}
+
+Видим, что в среднем обработка файла занимает 1200ms. Теперь посчитаем среднее время работы программы с моей реализацией красно-черного ддерева.
+
+\begin{alltt}
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 736ms
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 739ms
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 734ms
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 735ms
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 735ms
+(py37) ~ /DA/lab2$ ./lab2ex <banchmark/test_of_absolutia
+1>/dev/null
+inp complete| 739ms
+\end{alltt}
+
+Наблюдаем среднее время работы 735ms. Рискну предположить, что меньшая эффективность std::map как-то связана с ощутимым упором на универсальность при
+создании этой структуры.
+
+\pagebreak
+
