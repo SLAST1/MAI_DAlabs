@@ -5,3 +5,6 @@ Variants:
 2. [RB-tree](/LR_DA2_tex/report.pdf)
 3. [LR2 debug diary](/LR_DA3_tex/report.pdf)
 4. [Finding a pattern on Z-blocks|Words <16 chars](/LR_DA4_tex/report.pdf)
+5. [Find incoming samples in the text](/LR_DA5_tex/report.pdf)
+6. (/LR_DA6_tex/report.pdf)
+7. [Tricky backpack](/LR_DA7_tex/report.pdf)
