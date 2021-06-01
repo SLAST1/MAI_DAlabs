@@ -1,0 +1,31 @@
+\section{Тест производительности}
+
+Сравним реализованный алгоритм с приближённым алгоритмом, который не всегда
+даёт верный ответ.
+Тесты состоят из 10, 50 и 100 вещей.
+
+Моя реализация:
+\begin{alltt}
+(py37) ~ /DA_labs/lab7$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab7$ make bench
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror benchmark.cpp -o benchmark
+(py37) ~ /DA_labs/lab7$ ./benchmark <tests/1.in
+Sort 0.74 ms
+(py37) ~ /DA_labs/lab7$ ./solution <tests/1.in
+DP 0.388 ms
+(py37) ~ /DA_labs/lab7$ ./benchmark <tests/2.in
+Sort 0.119 ms
+(py37) ~ /DA_labs/lab7$ ./solution <tests/2.in
+DP 1.584 ms
+(py37) ~ /DA_labs/lab7$ ./benchmark <tests/3.in
+Sort 0.204 ms
+(py37) ~ /DA_labs/lab7$ ./solution <tests/3.in
+DP 125.560 ms
+
+\end{alltt}
+
+Видно, что приближённый алгоритм гораздо быстрее динамического программирования, потому что он сортирует предметы по уменьшению веса и возрастанию цены,
+а количество предметов мало.
+\pagebreak
+

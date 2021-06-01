@@ -1,0 +1,142 @@
+\section{Описание}
+Как описано в [1], динамическое программирование - это метод решения задач, при
+котором сложная задача разбивается на более простые, решение сложной задачи
+составляется из решений простых задач.
+
+Этот метод очень похож на «разделяй и властвуй», но динамическое программирование допускает использование метода восходящего анализа, который позволяет
+изначально решать простые задачи и получать на их базе решение более сложных.
+
+Так же метод запоминает решения подзадач, потому что часто для построения нужно
+обращаться за оптимальным решением к одним и тем же малым задачам.
+
+Задача о рюкзаке является известной NP-полной задачей, которая при некоторых
+ограничениях решается за полиномиальное время с помощью метода динамического
+программирования.
+
+Стадартный вариант задачи описан и доказан в [2]. Для моего варианта задания
+$dp_i,j,k$ - максимальная стоимость $j$ вещей из первых $i$, таких, что их суммарный вес
+не превышает $k$. То есть алгоритм будет перебирать количество предметов, которые будут в рюкзаке.
+
+Пусть существует оптимальное решение в $dp_i,j,k-w_j-1$, тогда $dp_i+1,j+1,k = max(dp_i,j,k-wj-1 + c_j+1, dpi + 1, j, k)$. В рекуррентной формуле рассматривается два варианта: взять вещь $j + 1$ или нет.
+
+Такое решение имеет $n^2 \times m$ состояния, в каждое можно перейти из двух других. Так временная сложность алгоритма $O(n^2 \times m)$.
+
+Хранение всей таблицы состояний слишком дорого по памяти, но необходимо для восстановления ответа. 
+Поэтому будем хранить только $dp_i$ и $dp_i+1$ и битовые множества предметов, которые оптимальны для решения подзадачи.
+Пространственная сложность такого подхода $O(n \times m)$.
+\pagebreak
+
+\section{Исходный код}
+Опишем матрицы $dpPrev$ и $dpCur$ для $dp_j+1$ и $dp_j$, матрицы $setCur$ и $setPrev$ для хранения множества предметов.
+Для достижения пространственной сложности $O(n \times m)$ будем использовать эффективный по памяти $std :: bitset$.
+
+Код: main.cpp
+\begin{lstlisting}[language=C++]
+#include <bitset>
+#include <iostream>
+#include <vector>
+
+const size_t MAX_N = 100;
+
+int main() {
+int n, m;
+std::cin >> n >> m;
+std::vector<int> w(n);
+std::vector<long long> c(n);
+for (int i = 0; i < n; ++i) {
+std::cin >> w[i] >> c[i];
+}
+
+std::vector< std::vector< long long > > dpPrev(n + 1, std::vector<long long>(m + 1));
+std::vector< std::vector< long long > > dpCur(n + 1, std::vector<long long>(m + 1));
+std::vector< std::vector< std::bitset<MAX_N> > > setPrev(n + 1, std::vector< std::bitset<MAX_N> >(m + 1));
+std::vector< std::vector< std::bitset<MAX_N> > > setCur(n + 1, std::vector< std::bitset<MAX_N> >(m + 1));
+long long ans = 0;
+std::bitset<MAX_N> res;
+
+for (int j = 1; j < n + 1; ++j) {
+for (int k = 1; k < m + 1; ++k) {
+dpPrev[j][k] = dpPrev[j - 1][k];
+setPrev[j][k] = setPrev[j - 1][k];
+if (c[j - 1] > dpPrev[j][k] and k - w[j - 1] == 0) {
+dpPrev[j][k] = c[j - 1];
+setPrev[j][k] = 0;
+setPrev[j][k][j - 1] = 1;
+}
+if (dpPrev[j][k] > ans) {
+ans = dpPrev[j][k];
+res = setPrev[j][k];
+}
+}
+}
+
+for (long long i = 2; i < n + 1; ++i) {
+for (int j = 1; j < n + 1; ++j) {
+for (int k = 1; k < m + 1; ++k) {
+dpCur[j][k] = dpCur[j - 1][k];
+setCur[j][k] = setCur[j - 1][k];
+if (k - w[j - 1] > 0 and dpPrev[j - 1][k - w[j - 1]] > 0) {
+if (i * (c[j - 1] + dpPrev[j - 1][k - w[j - 1]] / (i - 1)) > dpCur[j][k]) {
+dpCur[j][k] = i * (c[j - 1] + dpPrev[j - 1][k - w[j - 1]] / (i - 1));
+setCur[j][k] = setPrev[j - 1][k - w[j - 1]];
+setCur[j][k][j - 1] = 1;
+}
+}
+if (dpCur[j][k] > ans) {
+ans = dpCur[j][k];
+res = setCur[j][k];
+}
+}
+}
+std::swap(dpCur, dpPrev);
+std::swap(setCur, setPrev);
+}
+std::cout << ans << '\n';
+for (int i = 0; i < n; ++i) {
+if (res[i]) {
+std::cout << i + 1 << ' ';
+}
+}
+std::cout << '\n';
+}
+
+\end{lstlisting}
+
+\pagebreak
+
+\section{Консоль}
+
+\begin{alltt}
+(py37) ~ /DA_labs/lab7$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab7$ cat tests/1.in
+3 6
+2 1
+5 4
+4 2
+(py37) ~ /DA_labs/lab7$ ./solution <tests/1.in
+6
+1 3
+(py37) ~ /DA_labs/lab7$ cat tests/2.in
+14 41
+2 60
+6 25
+10 56
+8 4
+7 81
+4 40
+10 56
+7 2
+8 32
+2 25
+6 22
+9 5
+9 95
+8 6
+(py37) ~ /DA_labs/lab7$ ./solution <tests/2.in
+2674
+1 2 3 5 6 10 13
+\end{alltt}
+
+\pagebreak
+
