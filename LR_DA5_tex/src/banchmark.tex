@@ -1,0 +1,25 @@
+\section{Тест производительности}
+
+Тест состоит из 400 тыс. поисков паттерна в тексте для моего поиска с использованием суффиксного массива и для стандартного метода строк find, который модифицирован для поиска нескольких образцов в тексте. 
+Паттерны повторяются по 4 штуки
+- p1: «abc», p2: «de», p3: «ghhe», p4: «tcehj», p5: «abc» и т.д.
+
+Текст: «abcgfhdeghheababctcehjtceghjtcehjdadeabcghheghhhheghhdeabcacbabchhjdetcehj»
+
+Моя реализация:
+\begin{alltt}
+(py37) ~ /DA_labs/lab5$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab5$ make bench
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror benchmark.cpp -o benchmark
+(py37) ~ /DA_labs/lab5$ ./benchmark
+Time for create suffix tree and suffix array: 0.0007106 seconds
+Time for my find: 6.08816 seconds
+Time for standart find: 1.66517 seconds
+\end{alltt}
+
+Как можно увидеть, время работы на построение суффиксново дерева и массива
+крайне мало, а поиск в несколько раз медленнее, но если например нам важно сэкономить память, но не так критично время, то поиск с использованием суффиксного
+массива вполне подходит.
+\pagebreak
+
