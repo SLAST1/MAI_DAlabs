@@ -8,3 +8,5 @@ Variants:
 5. [Find incoming samples in the text](/LR_DA5_tex/report.pdf)
 6. [](/LR_DA6_tex/report.pdf)
 7. [Tricky backpack](/LR_DA7_tex/report.pdf)
+8.
+9.
