@@ -1,0 +1,20 @@
+\section{Тест производительности}
+
+Сравним реализованный алгоритм с наивным алгоритмом, который не всегда даёт верный ответ.
+Тест состоит из нахождения наибольшей площади для 50000 и 100000 сторон
+
+Моя реализация:
+\begin{alltt}
+(py37) ~ /DA_labs/lab7$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab8$ make bench
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror benchmark.cpp -o benchmark
+(py37) ~ /DA_labs/lab8$ ./benchmark
+Time for algo with 50000 sides: 0.12 seconds
+Time for algo with 100000 sides: 0.29 seconds
+
+\end{alltt}
+
+Видно, что алгоритм работает, явно лучше чем наивный алгоритм за $O(n^2)$.
+\pagebreak
+
