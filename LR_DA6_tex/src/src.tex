@@ -1,0 +1,375 @@
+\section{Описание}
+Требуется реализовать класс для хранения «длинных» чисел, реализовать операции
+сложения, вычитания, умножения, деления и возведения в степень. Сложение выполняется очень просто, складываем разряды, в текущий разряд записываем остаток,
+а целую часть от деления запоминаем для следующего разряда. Вычитание выполняется аналогичным образом, с запоминанием, требуется ли нам «занять» число.
+Умножение выполняется аналогичным образом, только для каждой пары разрядов
+и последующих сдвигов для больших разрядов. Деление в степень выполняется начиная с больших разрядов, берется минимальное число, которое делится нацело,
+при помощи бинарного поиска и вычитается как в обычном делении стобком, и так
+до конца разрядов. Возведение в степень выполняется, используя уже написанное
+умножение, рекурсивно, если степень четная, то умножаем полученный результат из
+рекурсии сам на себя и делим степень пополам, если степень нечетная, то умножаем на исходное число и вычитаем из степени 1.Сравнения происходят очень просто,
+сначала сравниваем длины, если равны, то сравниваем по разрядам.
+
+В программе bigiht.cpp содержатся основные конструкторы и функции для реализации нашей программы. А так же операторы вычислительных действий (сложения, вычитания, умножения, деления, сравнения)
+
+\pagebreak
+
+\section{Исходный код}
+
+Код: main.cpp
+\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <cmath>
+#include "bigint.hpp"
+
+int main()
+{
+NBigInt::TBigInt num1, num2;
+NBigInt::TBigInt zero("0");
+char action = '?';
+while(std::cin >> num1 >> num2 >> action)
+{
+if(action == '+')
+{
+NBigInt::TBigInt res = num1 + num2;
+std::cout << res << "\n";
+}
+else if(action == '-')
+{
+if(num1 < num2)
+{
+std::cout << "Error\n";
+continue;
+}
+NBigInt::TBigInt res = num1 - num2;
+std::cout << res << "\n";
+}
+else if(action == '*')
+{
+NBigInt::TBigInt res = num1 * num2;
+std::cout << res << "\n";
+}
+else if(action == '^')
+{
+if(num1 == zero && num2 == zero)
+{
+std::cout << "Error\n";
+continue;
+}
+NBigInt::TBigInt res = num1 ^ num2;
+std::cout << res << "\n";
+}
+else if(action == '/')
+{
+if(num2 == zero)
+{
+std::cout << "Error\n";
+continue;
+}
+NBigInt::TBigInt res = num1 / num2;
+std::cout << res << "\n";
+}
+else if(action == '<')
+{
+if(num1 < num2) { std::cout << "true\n"; }
+else { std::cout << "false\n"; }
+}
+else if(action == '>')
+{
+if(num1 > num2) { std::cout << "true\n"; }
+else { std::cout << "false\n"; }
+}
+else if(action == '=')
+{
+if(num1 == num2) { std::cout << "true\n"; }
+else { std::cout << "false\n"; }
+}
+else { std::cout << "Error\n"; }
+}
+return 0;
+}
+\end{lstlisting}
+
+\pagebreak
+
+Код: digiht.cpp
+\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include "bigint.hpp"
+
+namespace NBigInt
+{
+
+TBigInt::TBigInt(std::string const& str) { this->Init(str); }
+
+void TBigInt::Init(std::string const& str)
+{
+data.clear();
+int size = static_cast<int>(str.size());
+for (int i = size - 1; i >= 0; i = i - TBigInt::RADIX)
+{
+if (i < TBigInt::RADIX) { data.push_back(static_cast<int32_t>(atoll(str.substr(0, i + 1).c_str()))); }
+else { data.push_back(static_cast<int32_t>(atoll(str.substr(i - TBigInt::RADIX + 1, TBigInt::RADIX).c_str())));}
+}
+DeleteLeadingZeros();
+}
+
+void TBigInt::DeleteLeadingZeros()
+{
+while(!data.empty() && data.back() == 0) { data.pop_back(); }
+}
+
+std::istream& operator>>(std::istream& in, TBigInt& rhs)
+{
+std::string str;
+in >> str;
+rhs.Init(str);
+return in;
+}
+
+std::ostream& operator<<(std::ostream& out, TBigInt const& rhs)
+{
+if(rhs.data.empty())
+{
+out << "0";
+return out;
+}
+out << rhs.data.back();
+for(int i = rhs.data.size() - 2; i >= 0; --i)
+{
+out << std::setfill('0') << std::setw(TBigInt::RADIX) << rhs.data[i];
+}
+return out;
+}
+
+TBigInt const operator+(TBigInt const& lhs, TBigInt const& rhs)
+{
+TBigInt res;
+int32_t carry = 0;
+size_t n = std::max(lhs.data.size(), rhs.data.size());
+res.data.resize(n);
+for(size_t i = 0; i < n; ++i)
+{
+int32_t sum = carry;
+if(i < rhs.data.size()) { sum += rhs.data[i]; }
+if(i < lhs.data.size()) { sum += lhs.data[i]; }
+carry = sum / TBigInt::BASE;
+res.data[i] = sum % TBigInt::BASE;
+}
+if(carry != 0) { res.data.push_back(static_cast<int32_t>(1)); }
+res.DeleteLeadingZeros();
+return res;
+}
+
+TBigInt const operator-(TBigInt const& lhs, TBigInt const& rhs)
+{
+TBigInt res;
+int32_t carry = 0;
+size_t n = std::max(lhs.data.size(), rhs.data.size());
+res.data.resize(n);
+for(size_t i = 0; i < n; ++i)
+{
+int32_t sub = lhs.data[i] - carry;
+if(i < rhs.data.size()) { sub -= rhs.data[i]; }
+carry = 0;
+if(sub < 0)
+{
+carry = 1;
+sub += TBigInt::BASE;
+}
+res.data[i] = sub % TBigInt::BASE;
+}
+res.DeleteLeadingZeros();
+return res;
+}
+
+TBigInt const operator*(TBigInt const& lhs, TBigInt const& rhs)
+{
+if(rhs.data.size() == 1) { return lhs.MultShort(rhs); }
+if(lhs.data.size() == 1) { return rhs.MultShort(lhs); }
+TBigInt res;
+size_t n = lhs.data.size() * rhs.data.size();
+res.data.resize(n + 1);
+int32_t k = 0;
+int32_t r = 0;
+for(size_t i = 0; i < lhs.data.size(); ++i)
+{
+for(size_t j = 0; j < rhs.data.size(); ++j)
+{
+k = rhs.data[j] * lhs.data[i] + res.data[i+j];
+r = k / TBigInt::BASE;
+res.data[i+j+1] = res.data[i+j+1] + r;
+res.data[i+j] = k % TBigInt::BASE;
+}
+}
+res.DeleteLeadingZeros();
+return res;
+}
+
+TBigInt const TBigInt::MultShort(TBigInt const& rhs) const
+{
+int32_t carry = 0;
+int32_t mult = 0;
+size_t size = data.size();
+TBigInt res;
+
+for (size_t i = 0; i < size; ++i)
+{
+mult = data[i] * rhs.data[0] + carry;
+res.data.push_back(mult % BASE);
+carry = mult / BASE;
+}
+if (carry != 0) { res.data.push_back(carry); }
+res.DeleteLeadingZeros();
+return res;
+}
+
+TBigInt const operator^(TBigInt const& lhs, TBigInt const& power)
+{
+TBigInt res("1");
+TBigInt two("2");
+TBigInt one("1");
+TBigInt zero("0");
+if(power == zero) { return res; }
+if(power == one || lhs == one) { return lhs; }
+if(power.data[0] % 2 == 0)
+{
+TBigInt res = lhs ^ (power / two);
+return res * res;
+}
+else
+{
+TBigInt res = lhs ^ (power - one);
+return lhs * res;
+}
+}
+
+void TBigInt::ShiftRight()
+{
+if (data.size() == 0)
+{
+data.push_back(0);
+return;
+}
+data.push_back(data[data.size() - 1]);
+for (size_t i = data.size() - 2; i > 0; --i) { data[i] = data[i - 1]; }
+data[0] = 0;
+}
+
+TBigInt const operator/(TBigInt const& lhs, TBigInt const& rhs)
+{
+TBigInt curr, res;
+size_t lhs_size = lhs.data.size();
+res.data.resize(lhs_size);
+int l = 0;
+int r = TBigInt::BASE;
+int m = 0;
+int data_res = 0;
+for(int i = lhs_size - 1; i >= 0; --i)
+{
+m = 0;
+l = 0;
+r = TBigInt::BASE;
+curr.ShiftRight();
+curr.data[0] = lhs.data[i];
+curr.DeleteLeadingZeros();
+while(l <= r)
+{
+m = (l + r) / 2;
+if(rhs * TBigInt(std::to_string(m)) <= curr)
+{
+data_res = m;
+l = m + 1;
+}
+else { r = m - 1; }
+}
+res.data[i] = data_res;
+curr = curr - rhs * TBigInt(std::to_string(data_res));
+}
+res.DeleteLeadingZeros();
+return res;
+}
+
+bool operator<(TBigInt const& lhs, TBigInt const& rhs)
+{
+if(lhs.data.size() != rhs.data.size()) { return lhs.data.size() < rhs.data.size(); }
+for(int i = lhs.data.size() - 1; i >= 0; --i)
+{
+if(lhs.data[i] != rhs.data[i]) { return  lhs.data[i] < rhs.data[i]; }
+}
+return false;
+}
+
+bool operator==(TBigInt const& lhs, TBigInt const& rhs) { return !(lhs < rhs) && !(rhs < lhs); }
+bool operator!=(TBigInt const& lhs, TBigInt const& rhs) { return !(lhs == rhs); }
+bool operator<=(TBigInt const& lhs, TBigInt const& rhs) { return !(rhs < lhs); }
+bool operator>(TBigInt const& lhs, TBigInt const& rhs) { return !(lhs <= rhs); }
+bool operator>=(TBigInt const& lhs, TBigInt const& rhs) { return !(lhs < rhs); }
+
+}
+\end{lstlisting}
+
+\section{Консоль}
+
+\begin{alltt}
+(py37) ~ /DA_labs/lab6$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab6$ cat test_sum.txt
+050604130001
+021410140107
++
+(py37) ~ /DA_labs/lab6$ ./solution <test_sum.txt
+72014270108
+(py37) ~ /DA_labs/lab6$ cat test_sub.txt
+040500130012
+021410140107
+-
+(py37) ~ /DA_labs/lab6$ ./solution <test_sub.txt
+19089989905
+(py37) ~ /DA_labs/lab6$ cat test__mult.txt
+050604130001
+021410140107
+*
+(py37) ~ /DA_labs/lab6$ ./solution <test_mult.txt
+1083441513314252050107
+(py37) ~ /DA_labs/lab6$ cat test_power.txt
+14
+02
+^
+(py37) ~ /DA_labs/lab6$ ./solution <test_power.txt
+196
+(py37) ~ /DA_labs/lab6$ cat test_div.txt
+050604130001
+031014
+/
+(py37) ~ /DA_labs/lab6$ ./solution <test_div.txt
+1631654
+(py37) ~ /DA_labs/lab6$ cat test_less.txt
+001203
+100103
+<
+(py37) ~ /DA_labs/lab6$./solution <test_less.txt
+true
+(py37) ~ /DA_labs/lab6$ cat test_more.txt
+9927
+0234
+>
+(py37) ~ /DA_labs/lab6$ ./solution <test_more.txt
+true
+(py37) ~ /DA_labs/lab6$ cat test_eq.txt
+9927
+00927
+=
+(py37) ~ /DA_labs/lab6$ ./solution <test_eq.txt
+true
+\end{alltt}
+
+\pagebreak
+

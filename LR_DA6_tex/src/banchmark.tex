@@ -1,0 +1,25 @@
+\section{Тест производительности}
+
+Тест состоит из 3-х подчастей для сложения, умножения и вычитания. Каждая
+часть теста проходит с константами, заданными перед началом замера времени, количество выполнений константых операций для всех операций равно 100 млн.
+
+Моя реализация:
+\begin{alltt}
+(py37) ~ /DA_labs/lab6$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab6$ make bench
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror benchmark.cpp -o benchmark
+(py37) ~ /DA_labs/lab6$ ./benchmark
+Bigint sum time: 5.65296 seconds
+Gmp sum time: 0.907357 seconds
+Bigint sub time: 5.56938 seconds
+Gmp sub time: 0.993383 seconds
+Bigint mult time: 9.86926 seconds
+Gmp mult time: 0.723498 seconds
+
+\end{alltt}
+
+Как можно увидеть, время работы примерно gmp достаточно сильно меньше на всех
+операциях, чем сложнее операция, тем больше разница, так мы реализовывали достаточно примитивные алгоритмы, не дающие такой скорости, как реализация в gmp.
+\pagebreak
+
