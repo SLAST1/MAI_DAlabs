@@ -8,5 +8,5 @@ Variants:
 5. [Find incoming samples in the text](/LR_DA5_tex/report.pdf)
 6. [Calculator](/LR_DA6_tex/report.pdf)
 7. [Tricky backpack](/LR_DA7_tex/report.pdf)
-8.
-9.
+8. [Maximal triangle](/LR_DA8_tex/report.pdf)
+9. (/LR_DA9_tex/report.pdf)
