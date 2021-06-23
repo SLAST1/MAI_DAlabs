@@ -9,4 +9,4 @@ Variants:
 6. [Calculator](/LR_DA6_tex/report.pdf)
 7. [Tricky backpack](/LR_DA7_tex/report.pdf)
 8. [Maximal triangle](/LR_DA8_tex/report.pdf)
-9. (/LR_DA9_tex/report.pdf)
+9. [Finding the shortest paths between all pairs of vertices](/LR_DA9_tex/report.pdf)
