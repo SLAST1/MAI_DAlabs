@@ -1,0 +1,26 @@
+\section{Тест производительности}
+
+Тест состоит из ввода графа и запуска алгоритма Джонсона 50000, 100000 и 200000 раз.
+
+Моя реализация:
+\begin{alltt}
+(py37) ~ /DA_labs/lab7$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab8$ make bench
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror benchmark.cpp -o benchmark
+(py37) ~ /DA_labs/lab8$ ./benchmark
+Enter graph:
+5 4
+1 2 -1
+2 3 2
+1 4 -5
+3 1 1
+Enter test count:
+50000
+Time for Johnson on 50000 tests: 3 seconds
+
+\end{alltt}
+
+Алгоритм работает за $O(n * m + n^2 * lnn)$, в нашем случае $n = m -> O(n^2 * lnn)$, что лучше чем алгоритм Флойда-Уоршела, имеющего сложность $O(n^3)$ и явно лучше наивного перебора за $O(n^4)$.
+\pagebreak
+

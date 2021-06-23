@@ -1,0 +1,150 @@
+\section{Описание}
+Для написания алгоритма Джонсона нам понадобится написать еще два алгоритма, алгоритм Беллмана-Форда и Дейкстры. Сам алгоритм таков, если алгоритм
+Беллмана-Форда возвращает ложь, то у нас отрицательный цикл, иначе используем
+алгоритм Дейкстры, если нет отрицательных дуг, иначе формируем новый орграф
+с такими же кратчайшими путями, но без отрицательных дуг и снова запускаем
+алгоритм Дейкстры.
+
+\pagebreak
+
+\section{Исходный код}
+
+Код: main.cpp
+\begin{lstlisting}[language=C++]
+#include "johnson.hpp"
+#include "structures.hpp"
+
+int main()
+{
+size_t n = 0;
+size_t m = 0;
+std::cin >> n >> m;
+TGraph gr(n, m);
+TMatrix dist(n, std::vector<int64_t>(n, INT64_MAX));
+for(size_t i = 0; i < n; ++i)
+dist[i][i] = 0;
+size_t from = 0;
+size_t to = 0;
+int64_t weight = 0;
+for(size_t k = 0; k < m; ++k)
+{
+std::cin >> from >> to >> weight;
+gr.edges.push_back(TEdge{from - 1, to - 1, weight});
+}
+if(Johnson(gr, dist))
+{
+for(size_t i = 0; i < n; ++i)
+{
+for(size_t j = 0; j < n; ++j)
+{
+if(dist[i][j] == INT64_MAX)
+std::cout << "inf";
+else
+std::cout << dist[i][j];
+if(j != n - 1)
+std::cout << ' ';
+}
+std::cout << "\n";
+}
+}
+return 0;
+}
+\end{lstlisting}
+\pagebreak
+
+Код: johnson.cpp
+\begin{lstlisting}[language=C++]
+#include "johnson.hpp"
+#include "structures.hpp"
+
+bool operator<(TEdge const& p1, TEdge const& p2) { return p1.weigth > p2.weigth; }
+
+void Deikstra(TMatrix const& gr, size_t const& node, TMatrix& dist, size_t const& n)
+{
+dist[node][node] = 0;
+std::priority_queue<TEdge> pq;
+TEdge t = {node, 0, 0};
+pq.push(t);
+while(!pq.empty())
+{
+TEdge s = pq.top();
+pq.pop();
+for(size_t i = 0; i < n; ++i)
+{
+if(dist[node][i] - dist[node][s.from] > gr[s.from][i])
+{
+dist[node][i] = dist[node][s.from] + gr[s.from][i];
+TEdge p = { i, 0, dist[node][i] };
+pq.push(p);
+}
+}
+}
+}
+
+bool BellmanFord(TGraph const& gr, size_t const& node, TMatrix& dist)
+{
+dist[node][node] = 0;
+for(size_t j = 0; j < gr.v - 1; ++j)
+{
+for(auto& i: gr.edges)
+if(dist[node][i.from] != INT64_MAX &&  dist[node][i.to] > dist[node][i.from] + i.weigth)
+dist[node][i.to] = (dist[node][i.from] + i.weigth);
+}
+for(auto& i: gr.edges)
+if(dist[node][i.from] != INT64_MAX &&  dist[node][i.to] > dist[node][i.from] + i.weigth)
+return false;
+return true;
+}
+
+bool Johnson(TGraph const& gr, TMatrix& dist)
+{
+TGraph new_gr;
+new_gr.v = gr.v + 1;
+new_gr.e = gr.e + gr.v;
+new_gr.edges = gr.edges;
+for(size_t i = 0; i < gr.v; ++i)
+new_gr.edges.push_back(TEdge{gr.v, i, 0});
+TMatrix new_dist(1, std::vector<int64_t>(new_gr.v, 0));
+if(!BellmanFord(new_gr, 0, new_dist))
+{
+std::cout << "Negative cycle\n";
+return false;
+}
+TMatrix graph(gr.v, std::vector<int64_t>(gr.v, INT64_MAX));
+for(size_t i = 0; i < gr.v; ++i)
+graph[i][i] = 0;
+for(auto& i: gr.edges)
+graph[i.from][i.to] = i.weigth + new_dist[0][i.from] - new_dist[0][i.to];
+for(size_t i = 0; i < gr.v; ++i)
+Deikstra(graph, i, dist, gr.v);
+for(size_t i = 0; i < gr.v; ++i)
+for(size_t j = 0; j < gr.v; ++j)
+if(dist[i][j] != INT64_MAX)
+dist[i][j] = dist[i][j] + new_dist[0][j] - new_dist[0][i];
+return true;
+}
+
+\end{lstlisting}
+\pagebreak
+
+\section{Консоль}
+
+\begin{alltt}
+(py37) ~ /DA_labs/lab8$ make
+g++ -g -O2 -pedantic -std=c++17 -Wall -Wextra -Werror main.cpp -o solution
+(py37) ~ /DA_labs/lab8$ cat test.txt
+5 4
+1 2 -1
+2 3 2
+1 4 -5
+3 1 1
+(py37) ~ /DA_labs/lab8$ ./solution <test.txt
+0 -1 1 -5 inf
+3 0 2 -2 inf
+1 0 0 -4 inf
+inf inf inf 0 inf
+inf inf inf inf 0
+\end{alltt}
+
+\pagebreak
+
