@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.5)
+project(da_09)
+add_executable(da_exercise_09 main.cpp johnson.cpp)
+set_target_properties(da_exercise_09 PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+add_executable(da_benchmark_09 benchmark.cpp johnson.cpp)
+set_target_properties(da_benchmark_09 PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
